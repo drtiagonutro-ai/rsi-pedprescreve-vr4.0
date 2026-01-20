@@ -1675,6 +1675,923 @@ function OMA({onBack}){
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ped Prescreve App</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<style>
+:root{
+--pp-papiro:#F3EBDD;
+--pp-card:#F7EFE3;
+--pp-surface:#FBF6EE;
+--pp-green:#1F443C;
+--pp-gold:#B08A2E;
+--pp-text:#1F443C;
+--pp-muted:#5A6D66;
+--pp-border:rgba(31,68,60,.14);
+--radius:18px;
+}
+
+body{
+margin:0;
+font-family:Inter,system-ui;
+background:var(--pp-papiro);
+color:var(--pp-text);
+}
+
+.wrap{max-width:1100px;margin:auto;padding:16px 14px 110px}
+
+.topbar{
+background:var(--pp-card);
+border:1px solid var(--pp-border);
+border-radius:var(--radius);
+padding:14px;
+}
+
+.brand{
+display:flex;
+gap:12px;
+align-items:center;
+}
+
+.brand img{
+width:44px;
+height:44px;
+border-radius:12px;
+}
+
+.brand-title{
+font-family:Cinzel,serif;
+letter-spacing:.05em;
+font-size:18px;
+}
+
+.search{
+margin-top:14px;
+}
+
+.search input{
+width:100%;
+padding:12px;
+border-radius:14px;
+border:1px solid var(--pp-border);
+font-size:14px;
+}
+
+.suggestions{
+margin-top:8px;
+border-radius:14px;
+overflow:hidden;
+border:1px solid var(--pp-border);
+background:#fff;
+}
+
+.suggestions div{
+padding:10px 12px;
+cursor:pointer;
+border-top:1px solid var(--pp-border);
+}
+
+.suggestions div:first-child{border-top:none}
+.suggestions div:hover{background:rgba(176,138,46,.1)}
+
+.cards{
+margin-top:20px;
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+gap:14px;
+}
+
+.card{
+background:var(--pp-card);
+border-radius:var(--radius);
+padding:16px;
+border:1px solid var(--pp-border);
+cursor:pointer;
+}
+
+.card.disabled{opacity:.5;cursor:default}
+</style>
+</head>
+
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const {useState,useMemo}=React;
+
+function App(){
+const [page,setPage]=useState("home");
+return page==="home"
+? <Home openOMA={()=>setPage("oma")}/>
+: <OMA back={()=>setPage("home")}/>;
+}
+
+function Home({openOMA}){
+const [q,setQ]=useState("");
+const show=q.length>0 && "otite média aguda".includes(q.toLowerCase());
+return(
+<div className="wrap">
+<div className="topbar">
+<div className="brand">
+<img src="logo.png" onError={e=>e.target.style.display="none"}/>
+<div>
+<div className="brand-title">Ped Prescreve App</div>
+<div style={{fontSize:12,color:"#5A6D66"}}>Olá, Dr.(a)</div>
+</div>
+</div>
+
+<div className="search">
+<input placeholder="o que você deseja prescrever hoje?"
+value={q} onChange={e=>setQ(e.target.value)}/>
+{show &&
+<div className="suggestions">
+<div onClick={openOMA}>Otite média aguda</div>
+</div>}
+</div>
+</div>
+
+<div className="cards">
+<div className="card disabled">Bronquiolite</div>
+<div className="card disabled">Pneumonia</div>
+<div className="card disabled">Crise Convulsiva</div>
+<div className="card disabled">PCR</div>
+<div className="card disabled">Intubação</div>
+<div className="card" onClick={openOMA}>Otite média aguda</div>
+</div>
+</div>
+);
+}
+function OMA({back}){
+
+/* =====================
+   ESTADOS BÁSICOS
+===================== */
+const [peso,setPeso]=useState("");
+const [idade,setIdade]=useState("");
+const [idadeTipo,setIdadeTipo]=useState("anos");
+const pesoKg=parseFloat(peso)||0;
+const idadeAnos=idadeTipo==="meses" ? (parseFloat(idade)||0)/12 : (parseFloat(idade)||0);
+
+/* =====================
+   CHECKLIST CLÍNICO
+===================== */
+const [grave,setGrave]=useState(false);
+const [otorreia,setOtorreia]=useState(false);
+const [beta30,setBeta30]=useState(false);
+const [conj,setConj]=useState(false);
+const [falha,setFalha]=useState(false);
+const [voDificil,setVoDificil]=useState(false);
+
+/* =====================
+   ALERGIAS
+===================== */
+const [algAmox,setAlgAmox]=useState(false);
+const [algClav,setAlgClav]=useState(false);
+const [algCeph,setAlgCeph]=useState(false);
+const [algMacro,setAlgMacro]=useState(false);
+const [algDip,setAlgDip]=useState(false);
+const [algPara,setAlgPara]=useState(false);
+const [algIbu,setAlgIbu]=useState(false);
+
+/* =====================
+   ESCOLHAS MANUAIS
+===================== */
+const [altAtb,setAltAtb]=useState("");
+const [cefVia,setCefVia]=useState("");
+
+/* =====================
+   DIAS ATB
+===================== */
+let diasAtb=7;
+if(grave||otorreia||idadeAnos<6) diasAtb=10;
+
+/* =====================
+   UTILITÁRIOS
+===================== */
+const gotas=(mgkg,conc,maxGotas,maxMgDia)=>{
+let mg=mgkg*pesoKg;
+let ml=mg/conc;
+let g=ml*20;
+g=Math.min(g,maxGotas);
+let mgDia=g*conc/20*4;
+if(mgDia>maxMgDia){
+g=maxMgDia/conc*20/4;
+}
+return Math.round(g);
+};
+
+const mlDose=(mgkgdia,conc,maxMgDia)=>{
+let mgdia=mgkgdia*pesoKg;
+mgdia=Math.min(mgdia,maxMgDia);
+let mldose=(mgdia/2)/conc;
+return (Math.round(mldose*2)/2).toFixed(1);
+};
+
+/* =====================
+   ANALGÉSICOS
+===================== */
+let analg=[];
+if(!algPara){
+let g=gotas(10,200,999,2000);
+analg.push(`Paracetamol 200 mg/mL\nDar ${g} gotas a cada 6 horas se dor ou febre.`);
+}
+if(!algDip){
+let g=gotas(20,500,40,2000);
+analg.push(`Dipirona 500 mg/mL\nDar ${g} gotas a cada 6 horas se dor ou febre.`);
+}
+if(!algIbu){
+let g=gotas(10,100,60,2400);
+analg.push(`Ibuprofeno 100 mg/mL\nDar ${g} gotas a cada 8 horas por 3 a 5 dias.`);
+}
+
+/* =====================
+   ANTIBIÓTICO
+===================== */
+let atbTexto="";
+let uso="USO ORAL";
+
+/* Ceftriaxona se VO difícil */
+if(voDificil){
+uso=cefVia==="IM"?"USO INTRAMUSCULAR":"USO INTRAVENOSO";
+let dose=Math.min(50*pesoKg,1000);
+if(cefVia==="IM"){
+let ml=(dose/250).toFixed(1);
+atbTexto=`Ceftriaxona IM\nDose: ${dose} mg\nDiluir 1 g em 3,5 mL lidocaína 1%\nAdministrar ${ml} mL IM 1x/dia por 3 dias.`;
+}
+if(cefVia==="EV"){
+atbTexto=`Ceftriaxona EV\nDose: ${dose} mg\nReconstituir 1 g em 10 mL SF 0,9%\nDiluir em 50–100 mL SF 0,9%\nInfundir em 30 minutos, 1x/dia por 3 dias.`;
+}
+}
+
+/* Alergia beta-lactâmico */
+else if(algAmox||algClav){
+if(altAtb==="amox" && !algAmox){
+let ml=mlDose(90,50,1500);
+atbTexto=`Amoxicilina 250 mg/5 mL\nDar ${ml} mL 12/12h por ${diasAtb} dias.`;
+}
+if(altAtb==="cefurox" && !algCeph){
+let ml=(0.3*pesoKg).toFixed(1);
+atbTexto=`Cefuroxima 250 mg/5 mL\nDar ${ml} mL 12/12h por ${diasAtb} dias.`;
+}
+if(altAtb==="clari" && !algMacro){
+let ml=Math.min((0.15*pesoKg),10).toFixed(1);
+atbTexto=`Claritromicina 125 mg/5 mL\nDar ${ml} mL 12/12h por ${diasAtb} dias.`;
+}
+}
+
+/* Padrão */
+else{
+if(beta30||conj||falha){
+let ml=mlDose(90,80,1500);
+atbTexto=`Amoxicilina + Clavulanato 400 mg/5 mL\nDar ${ml} mL 12/12h por ${diasAtb} dias.`;
+}else{
+let ml=mlDose(90,50,1500);
+atbTexto=`Amoxicilina 250 mg/5 mL\nDar ${ml} mL 12/12h por ${diasAtb} dias.`;
+}
+}
+
+/* =====================
+   TEXTO FINAL
+===================== */
+const prescricaoFinal = uso+"\n\n"+
+analg.map((a,i)=>`${i+1}. ${a}`).join("\n\n")+
+(atbTexto?`\n\n${analg.length+1}. ${atbTexto}`:"")+
+`\n\nRecomendações:\nRetornar se piora ou ausência de melhora em 48–72h.`;
+
+/* =====================
+   UI
+===================== */
+return(
+<div className="wrap">
+<button onClick={back}>← Voltar</button>
+
+<h2>Prescrição de Otite Média Aguda</h2>
+
+<label>Peso (kg)</label>
+<input value={peso} onChange={e=>setPeso(e.target.value)}/>
+
+<label>Idade</label>
+<input value={idade} onChange={e=>setIdade(e.target.value)}/>
+<select value={idadeTipo} onChange={e=>setIdadeTipo(e.target.value)}>
+<option value="anos">Anos</option>
+<option value="meses">Meses</option>
+</select>
+
+<h3>Critérios clínicos</h3>
+<label><input type="checkbox" onChange={e=>setGrave(e.target.checked)}/> Doença grave</label>
+<label><input type="checkbox" onChange={e=>setOtorreia(e.target.checked)}/> Otorreia</label>
+<label><input type="checkbox" onChange={e=>setBeta30(e.target.checked)}/> β-lactâmico 30 dias</label>
+<label><input type="checkbox" onChange={e=>setConj(e.target.checked)}/> Conjuntivite purulenta</label>
+<label><input type="checkbox" onChange={e=>setFalha(e.target.checked)}/> Falha clínica</label>
+<label><input type="checkbox" onChange={e=>setVoDificil(e.target.checked)}/> Dificuldade VO</label>
+
+{voDificil &&
+<div>
+<h4>Ceftriaxona</h4>
+<label><input type="checkbox" checked={cefVia==="IM"} onChange={()=>setCefVia("IM")}/> IM</label>
+<label><input type="checkbox" checked={cefVia==="EV"} onChange={()=>setCefVia("EV")}/> EV</label>
+</div>
+}
+
+<h3>Alergias</h3>
+<label><input type="checkbox" onChange={e=>setAlgAmox(e.target.checked)}/> Amoxicilina</label>
+<label><input type="checkbox" onChange={e=>setAlgClav(e.target.checked)}/> Clavulanato</label>
+<label><input type="checkbox" onChange={e=>setAlgCeph(e.target.checked)}/> Cefalosporina</label>
+<label><input type="checkbox" onChange={e=>setAlgMacro(e.target.checked)}/> Macrolídeo</label>
+
+{(algAmox||algClav)&&!voDificil &&
+<div>
+<h4>Escolha antibiótico</h4>
+{!algAmox && algClav && <label><input type="checkbox" checked={altAtb==="amox"} onChange={()=>setAltAtb("amox")}/> Amoxicilina</label>}
+{!algCeph && <label><input type="checkbox" checked={altAtb==="cefurox"} onChange={()=>setAltAtb("cefurox")}/> Cefuroxima</label>}
+{!algMacro && <label><input type="checkbox" checked={altAtb==="clari"} onChange={()=>setAltAtb("clari")}/> Claritromicina</label>}
+</div>
+}
+
+<textarea value={prescricaoFinal} readOnly style={{width:"100%",height:220,marginTop:20}}/>
+
+</div>
+);
+}
+/* ============================================================
+   PATCH FINAL: sobrescreve OMA() com versão completa
+   + barra fixa + gerar/copiar/pdf + ceftriax IM/EV + limites
+============================================================ */
+
+function OMA({back}){
+
+/* =====================
+   ESTADOS BÁSICOS
+===================== */
+const [peso,setPeso]=useState("");
+const [idade,setIdade]=useState("");
+const [idadeTipo,setIdadeTipo]=useState("anos"); // padrão: anos
+
+const pesoKg=parseFloat(String(peso).replace(",","."))||0;
+
+const idadeNum=parseFloat(String(idade).replace(",","."))||0;
+const idadeAnos=idadeTipo==="meses" ? (idadeNum/12) : idadeNum;
+
+const hasInputs = pesoKg>0 && idadeNum>=0;
+
+/* =====================
+   CHECKLIST CLÍNICO (com descrição detalhada)
+===================== */
+const [grave,setGrave]=useState(false);
+const [otorreia,setOtorreia]=useState(false);
+const [beta30,setBeta30]=useState(false);
+const [conj,setConj]=useState(false);
+const [falha,setFalha]=useState(false);
+const [voDificil,setVoDificil]=useState(false);
+
+/* =====================
+   ALERGIAS
+===================== */
+const [algAmox,setAlgAmox]=useState(false); // beta-lactâmico (amox)
+const [algClav,setAlgClav]=useState(false); // clavulanato
+const [algCeph,setAlgCeph]=useState(false);
+const [algMacro,setAlgMacro]=useState(false);
+const [algDip,setAlgDip]=useState(false);
+const [algPara,setAlgPara]=useState(false);
+const [algIbu,setAlgIbu]=useState(false);
+
+/* =====================
+   ESCOLHAS MANUAIS (exclusivas)
+===================== */
+const [altAtb,setAltAtb]=useState("");    // "amox" | "cefurox" | "clari" | ""
+const [cefVia,setCefVia]=useState("");    // "IM" | "EV" | ""
+
+/* Se VO difícil desmarcar => limpa seleção ceftriax */
+useEffect(()=>{
+  if(!voDificil) setCefVia("");
+},[voDificil]);
+
+/* Se alergias saírem => limpa escolha manual */
+useEffect(()=>{
+  if(!(algAmox||algClav)) setAltAtb("");
+},[algAmox,algClav]);
+
+/* =====================
+   DIAS ATB (regra)
+   - >=6 anos leve/moderada: 7 dias
+   - <2 ou grave/otorreia: 10 dias
+   - 2-5: 10 dias
+===================== */
+let diasAtb=7;
+if(grave || otorreia) diasAtb=10;
+else if(idadeAnos<6) diasAtb=10;
+else diasAtb=7;
+
+/* =====================
+   LIMITES (hard cap, silencioso)
+===================== */
+const LIMITS = {
+  PARA_MG_DIA: 2000,
+  DIP_MAX_GOTAS_DOSE: 40,
+  DIP_MG_DIA: 2000,
+
+  IBU_MG_DIA: 2400,
+  IBU_MAX_GOTAS_DOSE: 60,
+
+  AMOX_MG_DIA: 1500,
+  AMOXCLAV_MG_DIA: 1500,
+
+  CEFU_MG_DIA: 1000,
+  CLARI_MG_DIA: 500,
+  CLARI_MAX_ML_DOSE: 10,
+
+  CEFTRI_MG_DOSE_MAX: 1000
+};
+
+/* =====================
+   UTILITÁRIOS DOSE
+===================== */
+const DROPS_PER_ML = 20;
+
+const roundToHalf = (x)=> Math.round(x*2)/2;  // 0,5 em 0,5
+
+const calcDropsDose = (mgkg, concMgMl, maxDropsDose, maxMgDay, assumedDosesPerDay)=>{
+  // retorna gotas/dose com caps por dose e por dia (silencioso)
+  if(!hasInputs) return 0;
+
+  let mgDose = mgkg*pesoKg;
+  let mlDose = mgDose/concMgMl;
+  let drops = mlDose*DROPS_PER_ML;
+
+  // cap por dose (quando existe)
+  if(isFinite(maxDropsDose) && maxDropsDose>0){
+    drops = Math.min(drops, maxDropsDose);
+  }
+
+  // cap por dia
+  if(isFinite(maxMgDay) && maxMgDay>0 && isFinite(assumedDosesPerDay) && assumedDosesPerDay>0){
+    const mgPerDrop = concMgMl / DROPS_PER_ML;
+    let mgDay = drops * mgPerDrop * assumedDosesPerDay;
+    if(mgDay > maxMgDay){
+      drops = maxMgDay / (mgPerDrop * assumedDosesPerDay);
+    }
+  }
+
+  return Math.max(0, Math.round(drops));
+};
+
+const calcAmoxMlDoseBID = (mgKgDay, concMgMl, maxMgDay)=>{
+  // Amox/amoxclav: 12/12 => 2 doses/dia
+  // arredondar para 0,5 mL e manter 1 casa decimal
+  if(!hasInputs) return "0,0";
+  let mgDay = mgKgDay*pesoKg;
+  if(isFinite(maxMgDay) && maxMgDay>0) mgDay = Math.min(mgDay, maxMgDay);
+
+  const mgDose = mgDay/2;
+  let mlDose = mgDose/concMgMl;
+  mlDose = roundToHalf(mlDose);
+  return mlDose.toFixed(1).replace(".",",");
+};
+
+const calcCefuroxMlDoseBID = ()=>{
+  // 0,3 mL/kg/dose 12/12h ; cap 1000 mg/dia
+  // conc = 250mg/5mL = 50 mg/mL
+  if(!hasInputs) return "0,0";
+  const conc = 50;
+  let mlDose = 0.3*pesoKg;               // antes do cap
+  let mgDay = (mlDose*2)*conc;           // 2 doses/dia
+  if(mgDay > LIMITS.CEFU_MG_DIA){
+    // ajustar mlDose para mgDay cap
+    const mlDayMax = LIMITS.CEFU_MG_DIA/conc;
+    mlDose = mlDayMax/2;
+  }
+  mlDose = Math.round(mlDose*10)/10; // 0,1 mL
+  return mlDose.toFixed(1).replace(".",",");
+};
+
+const calcClariMlDoseBID = ()=>{
+  // 0,15 mL/kg/dose 12/12h ; cap 500 mg/dia e max 10 mL/dose
+  // conc 125mg/5mL = 25 mg/mL
+  if(!hasInputs) return "0,0";
+  const conc = 25;
+
+  let mlDose = 0.15*pesoKg;
+
+  // cap por dose
+  mlDose = Math.min(mlDose, LIMITS.CLARI_MAX_ML_DOSE);
+
+  // cap por dia (2 doses/dia)
+  let mgDay = (mlDose*2)*conc;
+  if(mgDay > LIMITS.CLARI_MG_DIA){
+    const mlDayMax = LIMITS.CLARI_MG_DIA/conc;
+    mlDose = mlDayMax/2;
+    mlDose = Math.min(mlDose, LIMITS.CLARI_MAX_ML_DOSE);
+  }
+
+  mlDose = Math.round(mlDose*10)/10; // 0,1
+  return mlDose.toFixed(1).replace(".",",");
+};
+
+const calcCeftriaxMgDose = ()=>{
+  if(!hasInputs) return 0;
+  return Math.min(50*pesoKg, LIMITS.CEFTRI_MG_DOSE_MAX);
+};
+
+const recommendationsText =
+"Recomendações: Retornar à unidade caso não houver melhora ou houver piora da dor/febre após 48 a 72 horas do início do tratamento / " +
+"Saída de secreção (otorreia) persistente após o tratamento / " +
+"Surgir inchaço ou vermelhidão atrás da orelha (sinal de mastoidite) / " +
+"Baixa tolerância da medicação por via oral / " +
+"Vômitos persistentes, Sonolência excessiva, Convulsões.";
+
+/* =====================
+   GERAÇÃO (gating)
+===================== */
+const [generated,setGenerated]=useState(false);
+const [preview,setPreview]=useState("");
+
+useEffect(()=>{
+  // Qualquer mudança em inputs cancela preview (obriga gerar de novo)
+  setGenerated(false);
+  setPreview("");
+},[
+  peso, idade, idadeTipo,
+  grave, otorreia, beta30, conj, falha, voDificil,
+  algAmox, algClav, algCeph, algMacro, algDip, algPara, algIbu,
+  altAtb, cefVia
+]);
+
+/* =====================
+   CONSTRUIR PRESCRIÇÃO
+===================== */
+const buildPrescription = ()=>{
+  // Analgésicos com caps:
+  const lines = [];
+  let header = "USO ORAL";
+
+  // Se ceftriax via selecionada
+  if(voDificil){
+    if(cefVia==="IM") header = "USO INTRAMUSCULAR";
+    else if(cefVia==="EV") header = "USO INTRAVENOSO";
+    else header = "USO INTRAMUSCULAR / INTRAVENOSO";
+  }
+
+  lines.push(header);
+  lines.push("");
+
+  let idx=1;
+
+  // Paracetamol 10 mg/kg/dose, assumindo 4 doses/dia para cap mg/dia
+  if(!algPara){
+    const g = calcDropsDose(10,200,999,LIMITS.PARA_MG_DIA,4);
+    lines.push(`${idx}. Paracetamol 200 mg/mL`);
+    lines.push(`   Dar ${g} gotas VO até de 6 em 6 horas em caso de dor ou temperatura axilar acima de 37,5.`);
+    lines.push("");
+    idx++;
+  }
+
+  // Dipirona 20 mg/kg/dose, cap 40 gotas/dose e 2g/dia, assumir 4 doses/dia
+  if(!algDip){
+    const g = calcDropsDose(20,500,LIMITS.DIP_MAX_GOTAS_DOSE,LIMITS.DIP_MG_DIA,4);
+    lines.push(`${idx}. Dipirona 500 mg/mL`);
+    lines.push(`   Dar ${g} gotas VO até de 6 em 6 horas em caso de dor ou temperatura axilar acima de 37,5.`);
+    lines.push("");
+    idx++;
+  }
+
+  // Ibuprofeno 10 mg/kg/dose, cap 60 gotas/dose e 2400 mg/dia, assumir 3 doses/dia (8/8)
+  if(!algIbu){
+    const g = calcDropsDose(10,100,LIMITS.IBU_MAX_GOTAS_DOSE,LIMITS.IBU_MG_DIA,3);
+    lines.push(`${idx}. Ibuprofeno 100 mg/mL`);
+    lines.push(`   Dar ${g} gotas VO de 8 em 8 horas por 3 a 5 dias.`);
+    lines.push("");
+    idx++;
+  }
+
+  // Antibiótico
+  let atbAdded = false;
+
+  // VO difícil => ceftriax escolha IM/EV obrigatória
+  if(voDificil){
+    const doseMg = Math.round(calcCeftriaxMgDose());
+
+    if(cefVia==="IM"){
+      // padrão IM: 1 g + 3,5 mL lidocaína 1% => ~250 mg/mL
+      const conc = 250;
+      const ml = Math.round((doseMg/conc)*10)/10;
+
+      lines.push(`${idx}. Ceftriaxona IM`);
+      lines.push(`   Dose: ${doseMg} mg (50 mg/kg/dose, 24/24h) por 3 dias.`);
+      lines.push(`   Diluição padrão: 1 g + 3,5 mL lidocaína 1% (≈ 250 mg/mL).`);
+      lines.push(`   Administrar ${ml.toFixed(1).replace(".",",")} mL por via intramuscular, 1x/dia.`);
+      lines.push("");
+      atbAdded = true;
+    }
+
+    if(cefVia==="EV"){
+      lines.push(`${idx}. Ceftriaxona EV`);
+      lines.push(`   Dose: ${doseMg} mg (50 mg/kg/dose, 24/24h) por 3 dias.`);
+      lines.push(`   Reconstituir 1 g com 10 mL de SF 0,9%.`);
+      lines.push(`   Diluir em 50–100 mL de SF 0,9% e infundir em 30 minutos.`);
+      lines.push("");
+      atbAdded = true;
+    }
+
+    if(!atbAdded){
+      // Não escolheu via
+      lines.push(`${idx}. Atenção`);
+      lines.push(`   Dificuldade importante de VO/adesão marcada: selecione Ceftriaxona IM OU EV para concluir a prescrição.`);
+      lines.push("");
+    }
+  } else {
+    // Se alergia beta-lact ou clav => escolha manual (SEM ceftriax aqui)
+    if(algAmox || algClav){
+      // clav apenas => permite amoxicilina pura como opção
+      if(altAtb==="amox" && algClav && !algAmox){
+        const ml = calcAmoxMlDoseBID(90,50,LIMITS.AMOX_MG_DIA);
+        lines.push(`${idx}. Amoxicilina 250 mg/5 mL`);
+        lines.push(`   Dar ${ml} mL VO de 12 em 12 horas por ${diasAtb} dias.`);
+        lines.push("");
+        atbAdded = true;
+      }
+
+      if(altAtb==="cefurox" && !algCeph){
+        const ml = calcCefuroxMlDoseBID();
+        lines.push(`${idx}. Cefuroxima 250 mg/5 mL`);
+        lines.push(`   Dar ${ml} mL VO de 12 em 12 horas por ${diasAtb} dias.`);
+        lines.push("");
+        atbAdded = true;
+      }
+
+      if(altAtb==="clari" && !algMacro){
+        const ml = calcClariMlDoseBID();
+        lines.push(`${idx}. Claritromicina 125 mg/5 mL`);
+        lines.push(`   Dar ${ml} mL VO a cada 12 horas por ${diasAtb} dias.`);
+        lines.push("");
+        atbAdded = true;
+      }
+
+      if(!atbAdded){
+        lines.push(`${idx}. Atenção`);
+        lines.push(`   Alergia marcada: selecione 1 opção de antibiótico (Cefuroxima OU Claritromicina${(algClav && !algAmox)? " OU Amoxicilina" : ""}).`);
+        lines.push("");
+      }
+    } else {
+      // padrão automático
+      const escalona = beta30 || conj || falha;
+
+      if(escalona){
+        const ml = calcAmoxMlDoseBID(90,80,LIMITS.AMOXCLAV_MG_DIA); // 80 mg/mL (amoxi)
+        lines.push(`${idx}. Amoxicilina + Clavulanato 400 mg/5 mL`);
+        lines.push(`   Dar ${ml} mL VO de 12 em 12 horas por ${diasAtb} dias.`);
+        lines.push("");
+      } else {
+        const ml = calcAmoxMlDoseBID(90,50,LIMITS.AMOX_MG_DIA);
+        lines.push(`${idx}. Amoxicilina 250 mg/5 mL`);
+        lines.push(`   Dar ${ml} mL VO de 12 em 12 horas por ${diasAtb} dias.`);
+        lines.push("");
+      }
+    }
+  }
+
+  lines.push(recommendationsText);
+  return lines.join("\n");
+};
+
+const onGenerate = ()=>{
+  if(!hasInputs) return;
+  const text = buildPrescription();
+  setPreview(text);
+  setGenerated(true);
+};
+
+const copyText = async ()=>{
+  try{
+    if(!generated) return;
+    await navigator.clipboard.writeText(preview);
+    alert("Texto copiado!");
+  }catch{
+    // fallback
+    if(!generated) return;
+    const ta = document.getElementById("pp-preview");
+    ta.focus(); ta.select();
+    document.execCommand("copy");
+    alert("Texto copiado!");
+  }
+};
+
+const copyText2 = ()=>copyText();
+
+const printPDF = ()=>{
+  if(!generated) return;
+  const escaped = preview
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;");
+
+  const w = window.open("", "_blank", "width=900,height=900");
+  if(!w) return;
+
+  w.document.open();
+  w.document.write(`
+    <!doctype html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Prescrição - Ped Prescreve</title>
+      <style>
+        body{font-family: Inter, Arial, sans-serif; padding: 24px;}
+        pre{white-space: pre-wrap; font-size: 14px; line-height: 1.35;}
+      </style>
+    </head>
+    <body>
+      <pre>${escaped}</pre>
+      <script>
+        window.onload = () => { window.print(); };
+      <\/script>
+    </body>
+    </html>
+  `);
+  w.document.close();
+};
+
+/* =====================
+   UI
+===================== */
+return(
+<div className="wrap">
+
+  <div className="topbar">
+    <div className="brand">
+      <img src="logo.png" onError={e=>e.target.style.display="none"} />
+      <div>
+        <div className="brand-title">Prescrição de Otite Média Aguda</div>
+        <div style={{fontSize:12,color:"#5A6D66"}}>Ped Prescreve</div>
+      </div>
+    </div>
+
+    <div style={{marginTop:12}}>
+      <button onClick={back}>← Voltar</button>
+    </div>
+  </div>
+
+  <div style={{marginTop:14}} className="topbar">
+    <h3>Dados do paciente</h3>
+
+    <label>Peso (kg)</label>
+    <input value={peso} onChange={e=>setPeso(e.target.value)} />
+
+    <label>Idade</label>
+    <div style={{display:"grid",gridTemplateColumns:"1fr 140px",gap:10}}>
+      <input value={idade} onChange={e=>setIdade(e.target.value)} />
+      <select value={idadeTipo} onChange={e=>setIdadeTipo(e.target.value)}>
+        <option value="anos">Anos</option>
+        <option value="meses">Meses</option>
+      </select>
+    </div>
+  </div>
+
+  <div style={{marginTop:14}} className="topbar">
+    <h3>Critérios clínicos</h3>
+
+    <label><input type="checkbox" checked={grave} onChange={e=>setGrave(e.target.checked)}/> <strong>Doença grave</strong> — Ex.: febre alta persistente, otalgia intensa, toxemia/prostração.</label>
+    <label><input type="checkbox" checked={otorreia} onChange={e=>setOtorreia(e.target.checked)}/> <strong>Otorreia</strong> — Sugere perfuração/otite supurativa → tende a favorecer tratamento e 10 dias.</label>
+    <label><input type="checkbox" checked={beta30} onChange={e=>setBeta30(e.target.checked)}/> <strong>Amoxicilina/β-lactâmico nos últimos 30 dias</strong> — Direciona para amoxi-clav em muitos protocolos.</label>
+    <label><input type="checkbox" checked={conj} onChange={e=>setConj(e.target.checked)}/> <strong>Conjuntivite purulenta associada</strong> — Sugere H. influenzae → considerar amoxi-clav.</label>
+    <label><input type="checkbox" checked={falha} onChange={e=>setFalha(e.target.checked)}/> <strong>Falha clínica (48–72h) / refratariedade</strong> — Direciona para escalonamento.</label>
+    <label><input type="checkbox" checked={voDificil} onChange={e=>setVoDificil(e.target.checked)}/> <strong>Dificuldade importante de VO/adesão</strong> — MVP: seleciona ceftriaxona 50 mg/kg/dose 24/24h por 3 dias.</label>
+
+    {voDificil && (
+      <div style={{marginTop:12, padding:12, border:"1px solid rgba(31,68,60,.14)", borderRadius:14, background:"#fff"}}>
+        <h4 style={{marginTop:0}}>Escolha Ceftriaxona (seleção exclusiva)</h4>
+
+        <label>
+          <input
+            type="checkbox"
+            checked={cefVia==="IM"}
+            onChange={()=>setCefVia(prev => prev==="IM" ? "" : "IM")}
+          /> Ceftriaxona IM
+        </label>
+
+        <label>
+          <input
+            type="checkbox"
+            checked={cefVia==="EV"}
+            onChange={()=>setCefVia(prev => prev==="EV" ? "" : "EV")}
+          /> Ceftriaxona EV
+        </label>
+
+        <div style={{fontSize:12,color:"#5A6D66",marginTop:8}}>
+          Dose: 50 mg/kg/dose (máx 1 g), 24/24h, por 3 dias.
+        </div>
+      </div>
+    )}
+  </div>
+
+  <div style={{marginTop:14}} className="topbar">
+    <h3>Alergias</h3>
+    <label><input type="checkbox" checked={algAmox} onChange={e=>setAlgAmox(e.target.checked)}/> Beta-lactâmico (Amoxicilina)</label>
+    <label><input type="checkbox" checked={algClav} onChange={e=>setAlgClav(e.target.checked)}/> Clavulanato</label>
+    <label><input type="checkbox" checked={algCeph} onChange={e=>setAlgCeph(e.target.checked)}/> Cefalosporinas</label>
+    <label><input type="checkbox" checked={algMacro} onChange={e=>setAlgMacro(e.target.checked)}/> Macrolídeos</label>
+    <label><input type="checkbox" checked={algDip} onChange={e=>setAlgDip(e.target.checked)}/> Dipirona</label>
+    <label><input type="checkbox" checked={algPara} onChange={e=>setAlgPara(e.target.checked)}/> Paracetamol</label>
+    <label><input type="checkbox" checked={algIbu} onChange={e=>setAlgIbu(e.target.checked)}/> AINE (Ibuprofeno)</label>
+
+    {(algAmox||algClav) && !voDificil && (
+      <div style={{marginTop:12, padding:12, border:"1px solid rgba(31,68,60,.14)", borderRadius:14, background:"#fff"}}>
+        <h4 style={{marginTop:0}}>Escolha antibiótico por alergia (seleção exclusiva)</h4>
+
+        {algClav && !algAmox && (
+          <label>
+            <input
+              type="checkbox"
+              checked={altAtb==="amox"}
+              onChange={()=>setAltAtb(prev => prev==="amox" ? "" : "amox")}
+            /> Amoxicilina (sem clavulanato)
+          </label>
+        )}
+
+        {!algCeph && (
+          <label>
+            <input
+              type="checkbox"
+              checked={altAtb==="cefurox"}
+              onChange={()=>setAltAtb(prev => prev==="cefurox" ? "" : "cefurox")}
+            /> Cefuroxima
+          </label>
+        )}
+
+        {!algMacro && (
+          <label>
+            <input
+              type="checkbox"
+              checked={altAtb==="clari"}
+              onChange={()=>setAltAtb(prev => prev==="clari" ? "" : "clari")}
+            /> Claritromicina
+          </label>
+        )}
+
+        <div style={{fontSize:12,color:"#5A6D66",marginTop:8}}>
+          Observação: ceftriaxona só aparece quando há dificuldade de VO/adesão.
+        </div>
+      </div>
+    )}
+  </div>
+
+  <div style={{marginTop:14}} className="topbar">
+    <h3>Pré-visualização para copiar</h3>
+    <textarea
+      id="pp-preview"
+      value={generated ? preview : ""}
+      readOnly
+      placeholder={generated ? "" : "Clique em GERAR PRESCRIÇÃO para visualizar aqui."}
+      style={{width:"100%",height:260}}
+    />
+  </div>
+
+  {/* Barra fixa inferior */}
+  <div style={{
+    position:"fixed", left:0, right:0, bottom:0,
+    background:"rgba(247,239,227,.95)",
+    borderTop:"1px solid rgba(31,68,60,.14)",
+    padding:"10px 12px"
+  }}>
+    <div style={{maxWidth:1100, margin:"0 auto", display:"grid", gridTemplateColumns:"1fr 1fr", gap:10}}>
+      <button onClick={onGenerate} style={{padding:12,borderRadius:14,border:"1px solid rgba(31,68,60,.14)", background:"#1F443C", color:"#F7EFE3", fontWeight:800}}>
+        GERAR PRESCRIÇÃO
+      </button>
+      <button onClick={printPDF} disabled={!generated} style={{padding:12,borderRadius:14,border:"1px solid rgba(31,68,60,.14)", background:"#FBF6EE", color:"#1F443C", fontWeight:800, opacity: generated?1:.6}}>
+        GERAR PDF
+      </button>
+    </div>
+
+    <div style={{maxWidth:1100, margin:"10px auto 0 auto", display:"grid", gridTemplateColumns:"1fr 1fr", gap:10}}>
+      <button onClick={copyText} disabled={!generated} style={{padding:10,borderRadius:14,border:"1px solid rgba(31,68,60,.14)", background:"#FBF6EE", color:"#1F443C", fontWeight:800, opacity: generated?1:.6}}>
+        COPIAR TEXTO
+      </button>
+      <button onClick={copyText2} disabled={!generated} style={{padding:10,borderRadius:14,border:"1px solid rgba(31,68,60,.14)", background:"#FBF6EE", color:"#1F443C", fontWeight:800, opacity: generated?1:.6}}>
+        COPIAR TEXTO
+      </button>
+    </div>
+  </div>
+
+</div>
+);
+}
+
+/* ============================================================
+   Render final + fechamento do HTML
+============================================================ */
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
 </body>
 </html>
