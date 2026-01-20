@@ -1,0 +1,1680 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ped Prescreve App</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    :root{
+      --pp-papiro: #F3EBDD;
+      --pp-card:   #F7EFE3;
+      --pp-surface:#FBF6EE;
+      --pp-green:  #1F443C;
+      --pp-gold:   #B08A2E;
+
+      --pp-text:   #1F443C;
+      --pp-muted:  #5A6D66;
+
+      --pp-border: rgba(31, 68, 60, 0.14);
+      --pp-border-2: rgba(176, 138, 46, 0.28);
+
+      --pp-radius-lg: 18px;
+      --shadow: 0 18px 50px rgba(31, 68, 60, 0.10);
+      --shadow2: 0 10px 30px rgba(31, 68, 60, 0.08);
+
+      --danger-bg: rgba(176, 40, 46, 0.10);
+      --danger-bd: rgba(176, 40, 46, 0.28);
+
+      --ok-bg: rgba(31, 68, 60, 0.10);
+      --ok-bd: rgba(31, 68, 60, 0.18);
+
+      --bottomBarH: 74px;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background: var(--pp-papiro);
+      color: var(--pp-text);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+
+    .wrap{max-width:1040px;margin:0 auto;padding:18px 14px calc(44px + var(--bottomBarH));}
+
+    .brand-title{
+      font-family: "Cinzel", serif;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+      color: var(--pp-green);
+    }
+
+    /* Top container */
+    .topbar{
+      border: 1px solid var(--pp-border);
+      border-radius: var(--pp-radius-lg);
+      background: rgba(247,239,227,.78);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      backdrop-filter: blur(4px);
+    }
+
+    .topbarHead{
+      padding:14px 14px 10px 14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .brandBlock{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width: 0;
+    }
+    .brandLogo{
+      width:42px;
+      height:42px;
+      border-radius: 12px;
+      border: 1px solid var(--pp-border);
+      background: rgba(251,246,238,.9);
+      box-shadow: 0 10px 25px rgba(31, 68, 60, 0.10);
+      object-fit: cover;
+      flex: 0 0 auto;
+    }
+    .brandTexts{display:flex;flex-direction:column;gap:2px;min-width:0;}
+    .brandName{
+      margin:0;
+      font-size:12px;
+      letter-spacing:0.16em;
+      text-transform:uppercase;
+      color: var(--pp-muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .brandScreenTitle{margin:0;font-size:18px;line-height:1.15;}
+    .brandSubtitle{margin:2px 0 0 0;font-size:12px;color: var(--pp-muted);line-height:1.35;}
+
+    .iconPill{
+      display:flex;gap:10px;align-items:center;
+      user-select:none;color: var(--pp-muted);font-size:12px;
+    }
+    .dot{
+      width:10px;height:10px;border-radius:999px;
+      background: linear-gradient(135deg, var(--pp-gold), var(--pp-green));
+      box-shadow: 0 0 0 4px rgba(176,138,46,.18);
+    }
+
+    /* Search row */
+    .searchRow{
+      padding: 0 14px 14px 14px;
+      border-top: 1px solid var(--pp-border);
+      background: rgba(247,239,227,.58);
+      position: relative;
+    }
+    .searchInput{
+      width:100%;
+      padding:12px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--pp-border);
+      outline:none;
+      background: var(--pp-surface);
+      color: var(--pp-text);
+      font-size: 14px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.6);
+    }
+    .searchInput::placeholder{color: rgba(90,109,102,.75);}
+
+    .suggestBox{
+      margin-top:10px;
+      border: 1px solid var(--pp-border);
+      border-radius: 16px;
+      overflow:hidden;
+      background: rgba(251,246,238,.95);
+      box-shadow: var(--shadow2);
+    }
+    .suggestItem{
+      padding:10px 12px;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      border-top: 1px solid var(--pp-border);
+    }
+    .suggestItem:first-child{border-top:none;}
+    .suggestItem:hover{background: rgba(176,138,46,.08);}
+    .suggestTitle{font-weight:700;font-size:13px;}
+    .suggestMeta{font-size:12px;color:var(--pp-muted);}
+
+    /* Cards */
+    .gridCards{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:12px;
+    }
+    @media (min-width:780px){
+      .gridCards{grid-template-columns: 1fr 1fr;}
+    }
+    @media (min-width:1040px){
+      .gridCards{grid-template-columns: 1fr 1fr 1fr;}
+    }
+
+    .contentCard{
+      border: 1px solid var(--pp-border);
+      border-radius: var(--pp-radius-lg);
+      background: rgba(247,239,227,.82);
+      box-shadow: var(--shadow2);
+      padding:14px;
+      cursor: pointer;
+      user-select:none;
+      transition: transform .08s ease;
+    }
+    .contentCard:hover{transform: translateY(-1px);}
+    .contentCard:active{transform: translateY(1px);}
+    .contentCard .h{font-weight:800;font-size:14px;margin:0 0 6px 0;}
+    .contentCard .s{margin:0;color:var(--pp-muted);font-size:12px;line-height:1.35;}
+    .badgeChip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      margin-top:10px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--pp-border);
+      background: rgba(251,246,238,.82);
+      font-size:12px;
+      color: var(--pp-muted);
+    }
+    .badgeChip strong{color:var(--pp-text)}
+    .disabled{
+      opacity:.55;
+      cursor: default;
+      transform:none !important;
+    }
+
+    /* Layout for OMA page */
+    .grid{margin-top:14px;display:grid;grid-template-columns:1fr;gap:14px;}
+    @media (min-width:940px){ .grid{grid-template-columns:420px 1fr;align-items:start;} }
+
+    .card{
+      border: 1px solid var(--pp-border);
+      border-radius: var(--pp-radius-lg);
+      background: rgba(247,239,227,.82);
+      box-shadow: var(--shadow2);
+      overflow:hidden;
+    }
+    .cardHead{
+      padding:12px 14px;
+      border-bottom: 1px solid var(--pp-border);
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      background: rgba(247,239,227,.92);
+    }
+    .cardHead h2{margin:0;font-size:14px;letter-spacing:.2px;}
+    .pill{
+      font-size:11px;padding:4px 8px;border-radius:999px;
+      border:1px solid var(--pp-border);
+      color: var(--pp-muted);
+      background: rgba(251,246,238,.85);
+      white-space:nowrap;
+    }
+    .cardBody{padding:14px;}
+
+    label{display:block;font-size:12px;color:var(--pp-muted);margin-bottom:6px;}
+    input,select,textarea,button{
+      font-family: inherit;
+    }
+    .field{
+      width:100%;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid var(--pp-border);
+      outline:none;
+      background: var(--pp-surface);
+      color: var(--pp-text);
+      font-size:14px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.6);
+    }
+    textarea{
+      width:100%;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid var(--pp-border);
+      outline:none;
+      background: var(--pp-surface);
+      color: var(--pp-text);
+      font-size:13px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.6);
+      min-height:140px;
+      resize:vertical;
+    }
+    .mono{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      background: rgba(251,246,238,.9);
+    }
+
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .mini{font-size:11px;color:var(--pp-muted);}
+    .hr{height:1px;background:var(--pp-border);margin:12px 0;}
+
+    .note{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:16px;
+      border:1px dashed rgba(31,68,60,.22);
+      color:var(--pp-muted);
+      background: rgba(251,246,238,.75);
+      font-size:12px;
+      line-height:1.35;
+    }
+
+    .btn{
+      cursor:pointer;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid var(--pp-border);
+      background: rgba(251,246,238,.85);
+      color: var(--pp-text);
+      font-size:12px;
+    }
+
+    /* Checklist */
+    .checkGrid{display:grid;grid-template-columns:1fr;gap:8px;}
+    .checkItem{
+      display:flex;align-items:flex-start;gap:10px;
+      padding:10px 10px;
+      border-radius:14px;
+      border:1px solid var(--pp-border);
+      background: rgba(251,246,238,.82);
+    }
+    .checkItem input{width:18px;height:18px;margin-top:2px;}
+    .checkMeta{display:flex;flex-direction:column;gap:2px;}
+    .checkMeta .h{font-size:12px;font-weight:700;}
+    .checkMeta .s{font-size:11px;color:var(--pp-muted);line-height:1.25;}
+
+    /* Accordion */
+    .accordion{
+      border:1px solid var(--pp-border);
+      background: rgba(251,246,238,.72);
+      border-radius:16px;
+      overflow:hidden;
+    }
+    .accHead{
+      padding:10px 12px;
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      cursor:pointer;user-select:none;
+    }
+    .accHead .t{font-weight:700;font-size:12px;}
+    .accHead .d{font-size:11px;color:var(--pp-muted);}
+    .accBody{
+      padding:10px 12px;
+      border-top:1px solid var(--pp-border);
+      display:grid;gap:8px;
+    }
+
+    /* Antibiotic option chooser (OR) */
+    .choiceBox{
+      border:1px solid var(--pp-border);
+      border-radius:16px;
+      background: rgba(251,246,238,.85);
+      padding:10px 10px;
+      display:grid;
+      gap:8px;
+    }
+    .choiceHeader{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .choiceHeader .t{font-weight:800;font-size:12px;}
+    .choiceHeader .d{font-size:11px;color:var(--pp-muted);}
+    .orRow{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      color: var(--pp-muted);
+      font-size:11px;
+      user-select:none;
+    }
+    .orLine{height:1px;flex:1;background:var(--pp-border);}
+    .radioItem{
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+      padding:10px 10px;
+      border-radius:14px;
+      border:1px solid var(--pp-border);
+      background: rgba(255,255,255,.35);
+      cursor:pointer;
+      user-select:none;
+    }
+    .radioItem:hover{background: rgba(176,138,46,.06);}
+    .radioItem input{width:18px;height:18px;margin-top:2px;}
+    .radioMeta .h{font-weight:800;font-size:12px;}
+    .radioMeta .s{color:var(--pp-muted);font-size:11px;line-height:1.25;margin-top:2px;}
+
+    /* Rx list */
+    .rxItem{
+      padding:12px 14px;
+      border-top:1px solid var(--pp-border);
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+    }
+    .rxName{font-weight:700;font-size:13px;margin:0;}
+    .rxSub{margin:4px 0 0 0;color:var(--pp-muted);font-size:12px;line-height:1.35;}
+    .badgeRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+    .badge{
+      padding:6px 10px;border-radius:999px;
+      border:1px solid var(--pp-border);
+      background: rgba(251,246,238,.82);
+      font-size:12px;
+      display:flex;gap:8px;align-items:center;
+    }
+    .badge strong{font-size:13px;}
+    .badge.gold{
+      border-color: rgba(176,138,46,.35);
+      background: rgba(176,138,46,.10);
+    }
+    .badge.warn{
+      border-color: var(--danger-bd);
+      background: var(--danger-bg);
+    }
+    .badge.ok{
+      border-color: var(--ok-bd);
+      background: var(--ok-bg);
+    }
+
+    .trash{
+      cursor:pointer;
+      width:40px;height:40px;
+      border-radius:14px;
+      border:1px solid rgba(176,40,46,.25);
+      background:rgba(176,40,46,.08);
+      color:var(--pp-text);
+      display:flex;align-items:center;justify-content:center;
+      user-select:none;
+    }
+
+    .qty{display:flex;align-items:center;gap:8px;}
+    .qty span{color:var(--pp-muted);font-size:12px;min-width:110px;}
+    .qty select{max-width:160px;}
+
+    .summary{
+      margin-top:12px;
+      border:1px solid var(--pp-border);
+      border-radius:16px;
+      background: rgba(251,246,238,.78);
+      padding:12px;
+    }
+    .summary .k{font-size:12px;color:var(--pp-muted);margin:0 0 6px 0;}
+    .summary .v{font-size:13px;font-weight:700;margin:0;}
+
+    /* Bottom fixed bar */
+    .bottomBar{
+      position:fixed;
+      left:0; right:0; bottom:0;
+      background: rgba(247,239,227,.90);
+      border-top: 1px solid var(--pp-border);
+      backdrop-filter: blur(6px);
+      padding:10px 12px calc(10px + env(safe-area-inset-bottom, 0px)) 12px;
+      z-index: 50;
+    }
+    .bottomBarInner{
+      max-width:1040px;
+      margin:0 auto;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    .btnPrimary{
+      border-color: var(--pp-border-2);
+      background: var(--pp-green);
+      color: #F7EFE3;
+      box-shadow: 0 10px 20px rgba(31,68,60,.18);
+      font-weight:700;
+    }
+    .btnGhost{
+      border-color: var(--pp-border);
+      background: rgba(251,246,238,.85);
+      color: var(--pp-text);
+      font-weight:700;
+    }
+
+    /* iOS-like bottom sheet for age */
+    .sheetOverlay{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.35);
+      z-index: 60;
+      display:flex;
+      align-items:flex-end;
+      justify-content:center;
+      padding:12px;
+    }
+    .sheet{
+      width:min(560px, 100%);
+      border-radius: 20px;
+      background: rgba(247,239,227,.98);
+      border:1px solid rgba(255,255,255,.5);
+      box-shadow: 0 30px 80px rgba(0,0,0,.25);
+      overflow:hidden;
+      transform: translateY(0);
+      animation: sheetIn .14s ease-out;
+    }
+    @keyframes sheetIn{
+      from{transform: translateY(10px); opacity: .96;}
+      to{transform: translateY(0); opacity: 1;}
+    }
+    .sheetTop{
+      padding:10px 12px;
+      border-bottom:1px solid var(--pp-border);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      background: rgba(251,246,238,.85);
+    }
+    .sheetTop .ttl{font-weight:800;font-size:13px;}
+    .sheetTop .act{
+      cursor:pointer;
+      border:none;
+      background: transparent;
+      color: var(--pp-green);
+      font-weight:800;
+      font-size:13px;
+      padding:8px 10px;
+      border-radius: 12px;
+    }
+    .sheetBody{padding:12px;}
+    .segmented{
+      display:inline-flex;
+      border:1px solid var(--pp-border);
+      background: rgba(255,255,255,.40);
+      border-radius: 14px;
+      overflow:hidden;
+      width: 100%;
+    }
+    .segBtn{
+      flex:1;
+      padding:10px 10px;
+      border:none;
+      cursor:pointer;
+      background: transparent;
+      color: var(--pp-muted);
+      font-weight:800;
+      font-size:12px;
+    }
+    .segBtn.active{
+      background: rgba(31,68,60,.10);
+      color: var(--pp-text);
+    }
+
+    .sheetRow{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+
+    /* Back button */
+    .backBtn{
+      cursor:pointer;
+      border:1px solid var(--pp-border);
+      background: rgba(251,246,238,.85);
+      border-radius: 14px;
+      padding:8px 10px;
+      font-weight:800;
+      font-size:12px;
+      color: var(--pp-text);
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      user-select:none;
+    }
+    .backBtn:hover{background: rgba(176,138,46,.08);}
+
+    /* Print */
+    @media print{
+      body{background:#fff}
+      .bottomBar, .searchRow, .iconPill, .backBtn, .suggestBox, .contentCard{display:none !important}
+      .wrap{padding:0 !important}
+      .topbar{box-shadow:none !important}
+      textarea{min-height: 500px;}
+    }
+  </style>
+</head>
+
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const {useMemo, useRef, useState, useEffect} = React;
+
+const DROPS_PER_ML = 20;
+
+// Default rounding for most mL: 0.1
+const ML_STEP_DEFAULT = 0.1;
+
+// Special rounding for amox/amoxclav: 0.5 mL step and 1 decimal
+const ML_STEP_AMOX = 0.5;
+
+const clamp = (n,min,max)=>Math.min(max,Math.max(min,n));
+const roundToStep = (value, step) => {
+  if (!isFinite(value) || step<=0) return 0;
+  return Math.round(value/step)*step;
+};
+const formatMl = (ml, decimals=1) => {
+  const fixed = Number(ml).toFixed(decimals);
+  return fixed.replace(".", ",");
+};
+const formatInt = (n)=>String(Math.round(n));
+
+const autoAtbDays = (ageYears, severe, otorrhea) => {
+  const a = Number(ageYears);
+  if (!isFinite(a) || a < 0) return 10;
+  if (severe || otorrhea) return 10;
+  if (a < 2) return 10;
+  if (a <= 5) return 10;
+  return 7;
+};
+
+const ALLERGY_KEYS = {
+  AMOX:"amox", CLAV:"clav", CEPH:"ceph",
+  NSAID:"nsaid", MACRO:"macro", DIP:"dip", PARA:"para"
+};
+
+function BottomBar({onGenerate, onPDF, disabled}){
+  return (
+    <div className="bottomBar">
+      <div className="bottomBarInner">
+        <button className={"btn btnPrimary"} onClick={onGenerate} disabled={disabled} style={{opacity: disabled ? .6 : 1}}>
+          Gerar prescrição
+        </button>
+        <button className={"btn btnGhost"} onClick={onPDF} disabled={disabled} style={{opacity: disabled ? .6 : 1}}>
+          Gerar PDF
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function AgeSheet({open, onClose, value, unit, onChange}){
+  const [tmpUnit, setTmpUnit] = useState(unit || "years");
+  const [tmpValue, setTmpValue] = useState(value || "");
+
+  useEffect(()=>{
+    if (open){
+      setTmpUnit(unit || "years");
+      setTmpValue(value || "");
+    }
+  },[open, unit, value]);
+
+  if (!open) return null;
+
+  const done = ()=>{
+    onChange({value: tmpValue, unit: tmpUnit});
+    onClose();
+  };
+
+  return (
+    <div className="sheetOverlay" onMouseDown={(e)=>{ if(e.target.classList.contains("sheetOverlay")) onClose(); }}>
+      <div className="sheet" onMouseDown={(e)=>e.stopPropagation()}>
+        <div className="sheetTop">
+          <div className="ttl">Idade</div>
+          <button className="act" onClick={done}>Concluir</button>
+        </div>
+        <div className="sheetBody">
+          <div className="segmented" role="tablist" aria-label="Unidade de idade">
+            <button className={"segBtn " + (tmpUnit==="years"?"active":"")} onClick={()=>setTmpUnit("years")}>Anos</button>
+            <button className={"segBtn " + (tmpUnit==="months"?"active":"")} onClick={()=>setTmpUnit("months")}>Meses</button>
+          </div>
+
+          <div className="sheetRow">
+            <div>
+              <label>Valor</label>
+              <input
+                className="field"
+                inputMode="numeric"
+                placeholder={tmpUnit==="years" ? "Ex.: 3" : "Ex.: 18"}
+                value={tmpValue}
+                onChange={(e)=>setTmpValue(e.target.value.replace(",", "."))}
+              />
+              <div className="mini" style={{marginTop:6}}>
+                Padrão do app: <strong>Anos</strong>. (Meses serão convertidos para anos internamente.)
+              </div>
+            </div>
+
+            <button className="btn" onClick={onClose} style={{width:"100%"}}>Cancelar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function App(){
+  const [route, setRoute] = useState("home"); // home | oma
+  const [search, setSearch] = useState("");
+
+  const CONTENT = useMemo(()=>[
+    { id:"oma", title:"otite média aguda", label:"Otite média aguda", route:"oma", meta:"Prescrição • antibiótico + analgésicos" },
+  ],[]);
+
+  const suggestions = useMemo(()=>{
+    const q = search.trim().toLowerCase();
+    if (!q) return [];
+    return CONTENT.filter(x => x.title.includes(q)).slice(0,5);
+  },[search, CONTENT]);
+
+  const openContent = (id)=>{
+    if (id==="oma"){
+      setRoute("oma");
+      setSearch("");
+      window.scrollTo({top:0, behavior:"instant"});
+    }
+  };
+
+  return (
+    <>
+      {route==="home" ? (
+        <Home
+          search={search}
+          setSearch={setSearch}
+          suggestions={suggestions}
+          onOpenSuggestion={(item)=>openContent(item.id)}
+          onOpenCard={(id)=>openContent(id)}
+        />
+      ) : (
+        <OMA onBack={()=>setRoute("home")} />
+      )}
+    </>
+  );
+}
+
+function Home({search, setSearch, suggestions, onOpenSuggestion, onOpenCard}){
+  return (
+    <div className="wrap">
+      <div className="topbar">
+        <div className="topbarHead">
+          <div className="brandBlock">
+            <img className="brandLogo" src="logo.png" alt="Ped Prescreve" onError={(e)=>{e.currentTarget.style.display="none";}} />
+            <div className="brandTexts">
+              <p className="brandName">PED PRESCREVE</p>
+              <p className={"brandScreenTitle brand-title"}>Ped Prescreve App</p>
+              <p className="brandSubtitle">Olá, Dr.(a)</p>
+            </div>
+          </div>
+
+          <div className="iconPill">
+            <span className="dot"></span>
+            <span>Home</span>
+          </div>
+        </div>
+
+        <div className="searchRow">
+          <input
+            className="searchInput"
+            value={search}
+            onChange={(e)=>setSearch(e.target.value)}
+            placeholder="o que você deseja prescrever hoje?"
+          />
+
+          {suggestions.length>0 ? (
+            <div className="suggestBox" aria-label="Sugestões">
+              {suggestions.map((s)=>(
+                <div key={s.id} className="suggestItem" onClick={()=>onOpenSuggestion(s)}>
+                  <div>
+                    <div className="suggestTitle">{s.label}</div>
+                    <div className="suggestMeta">{s.meta}</div>
+                  </div>
+                  <div className="pill">Abrir</div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          <div className="mini" style={{marginTop:10}}>
+            (Em breve: pesquisa de doenças e tratamentos dentro do app)
+          </div>
+        </div>
+      </div>
+
+      <div className="gridCards">
+        <div className="contentCard disabled" aria-disabled="true">
+          <p className="h">Bronquiolite</p>
+          <p className="s">Representativo (em breve)</p>
+          <span className="badgeChip"><strong>Conteúdo</strong> • nebulização</span>
+        </div>
+
+        <div className="contentCard disabled" aria-disabled="true">
+          <p className="h">Pneumonia</p>
+          <p className="s">Representativo (em breve)</p>
+          <span className="badgeChip"><strong>Conteúdo</strong> • antibiótico</span>
+        </div>
+
+        <div className="contentCard disabled" aria-disabled="true">
+          <p className="h">Crise Convulsiva</p>
+          <p className="s">Representativo (em breve)</p>
+          <span className="badgeChip"><strong>Conteúdo</strong> • estabilização</span>
+        </div>
+
+        <div className="contentCard disabled" aria-disabled="true">
+          <p className="h">PCR</p>
+          <p className="s">Representativo (em breve)</p>
+          <span className="badgeChip"><strong>Conteúdo</strong> • reanimação</span>
+        </div>
+
+        <div className="contentCard disabled" aria-disabled="true">
+          <p className="h">Intubação</p>
+          <p className="s">Representativo (em breve)</p>
+          <span className="badgeChip"><strong>Conteúdo</strong> • via aérea</span>
+        </div>
+
+        <div className="contentCard" onClick={()=>onOpenCard("oma")}>
+          <p className="h">Otite média aguda</p>
+          <p className="s">Já disponível • clique para abrir</p>
+          <span className="badgeChip"><strong>Prescrição</strong> • OMA</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OMA({onBack}){
+  // Patient
+  const [weight, setWeight] = useState("");
+  const [ageValueInput, setAgeValueInput] = useState("");
+  const [ageUnit, setAgeUnit] = useState("years"); // default years
+  const [ageSheetOpen, setAgeSheetOpen] = useState(false);
+
+  const W = useMemo(()=>Number(weight),[weight]);
+
+  const ageYears = useMemo(()=>{
+    const v = Number(ageValueInput);
+    if (!isFinite(v) || v < 0) return 0;
+    if (ageUnit === "months") return clamp(v/12, 0, 25);
+    return clamp(v, 0, 25);
+  },[ageValueInput, ageUnit]);
+
+  const hasInputs = useMemo(()=>isFinite(W)&&W>0&&isFinite(ageYears)&&ageYears>=0,[W,ageYears]);
+
+  // Checklist (detailed)
+  const [severe, setSevere] = useState(false);
+  const [otorrhea, setOtorrhea] = useState(false);
+  const [recentBLactam, setRecentBLactam] = useState(false);
+  const [purulentConj, setPurulentConj] = useState(false);
+  const [clinicalFailure, setClinicalFailure] = useState(false);
+  const [hardNoPO, setHardNoPO] = useState(false);
+
+  const antibioticDays = useMemo(()=>autoAtbDays(ageYears,severe,otorrhea),[ageYears,severe,otorrhea]);
+
+  // Allergy
+  const [allergyOpen, setAllergyOpen] = useState(false);
+  const [allergies, setAllergies] = useState({
+    [ALLERGY_KEYS.AMOX]: false,
+    [ALLERGY_KEYS.CLAV]: false,
+    [ALLERGY_KEYS.CEPH]: false,
+    [ALLERGY_KEYS.NSAID]: false,
+    [ALLERGY_KEYS.MACRO]: false,
+    [ALLERGY_KEYS.DIP]: false,
+    [ALLERGY_KEYS.PARA]: false,
+  });
+  const toggleAllergy = (key)=>setAllergies(prev=>({...prev,[key]:!prev[key]}));
+
+  // New rule: if clavulanate allergy is selected, also "liberar" amoxicillin pure option (antibiotic choice)
+  const allergyAmox = allergies[ALLERGY_KEYS.AMOX];
+  const allergyClav = allergies[ALLERGY_KEYS.CLAV];
+  const allergyCeph = allergies[ALLERGY_KEYS.CEPH];
+  const allergyIbu = allergies[ALLERGY_KEYS.NSAID];
+  const allergyMacro = allergies[ALLERGY_KEYS.MACRO];
+  const allergyDip = allergies[ALLERGY_KEYS.DIP];
+  const allergyPara = allergies[ALLERGY_KEYS.PARA];
+
+  // Dose helpers
+  const mgkgDoseToDrops = (doseMgKg, concentrationMgPerMl) => {
+    if (!hasInputs) return { label:"--", ml:0 };
+    const mg = doseMgKg * W;
+    const ml = mg / concentrationMgPerMl;
+    const drops = ml * DROPS_PER_ML;
+    return { label:`${formatInt(drops)} gotas`, ml };
+  };
+
+  // Amox/amoxclav ml dose BID with silent max mg/day cap
+  const mgkgDayToMlDoseBID = (mgKgDay, concentrationMgPerMl, maxMgDay=null, step=ML_STEP_DEFAULT) => {
+    if (!hasInputs) return { mlDose:0, mgDay:0 };
+
+    let mgDay = mgKgDay * W;
+    if (maxMgDay != null && isFinite(maxMgDay) && maxMgDay > 0 && mgDay > maxMgDay) {
+      mgDay = maxMgDay; // silent cap
+    }
+
+    const mgDose = mgDay / 2;
+    const mlDoseRaw = mgDose / concentrationMgPerMl;
+    const mlDose = roundToStep(mlDoseRaw, step);
+    return { mlDose, mgDay };
+  };
+
+  const fixedMlKgDose = (mlPerKgDose, step=ML_STEP_DEFAULT) => {
+    if (!hasInputs) return { mlDose:0 };
+    const mlDoseRaw = mlPerKgDose * W;
+    const mlDose = roundToStep(mlDoseRaw, step);
+    return { mlDose };
+  };
+
+  // Ceftriaxone mg/dose (once daily)
+  const ceftriaxoneMgDose = () => {
+    if (!hasInputs) return "--";
+    const mgDose = 50 * W;
+    return `${formatInt(mgDose)} mg/dose`;
+  };
+
+  // Analgesics base
+  const BASE_ANALGESICS = useMemo(()=>[
+    {
+      id:"para_gts_200",
+      key:"paracetamol",
+      kind:"analgesic",
+      name:"Paracetamol 200 mg/mL",
+      route:"VO",
+      concentrationMgPerMl:200,
+      doseMgKg:10,
+      freqText:"até de 6 em 6 horas em caso de dor ou temperatura axilar acima de 37,5."
+    },
+    {
+      id:"dip_gts_500",
+      key:"dipirona",
+      kind:"analgesic",
+      name:"Dipirona 500 mg/mL",
+      route:"VO",
+      concentrationMgPerMl:500,
+      doseMgKg:20,
+      freqText:"até de 6 em 6 horas em caso de dor ou temperatura axilar acima de 37,5.",
+      note:"Preferir seringa/medidor quando possível (gotejamento pode variar)."
+    },
+    {
+      id:"ibu_gts_100",
+      key:"ibuprofeno",
+      kind:"analgesic",
+      name:"Ibuprofeno 100 mg/mL",
+      route:"VO",
+      concentrationMgPerMl:100,
+      doseMgKg:10,
+      freqText:"de 8 em 8 horas por 3 a 5 dias."
+    }
+  ],[]);
+
+  const [analgesics, setAnalgesics] = useState(()=>BASE_ANALGESICS.map(x=>({...x,bottles:1})));
+  const resetStandard = ()=>setAnalgesics(BASE_ANALGESICS.map(x=>({...x,bottles:1})));
+  const removeAnalgesic = (id)=>setAnalgesics(prev=>prev.filter(x=>x.id!==id));
+  const setAnalgesicBottles = (id, bottles)=>{
+    setAnalgesics(prev=>prev.map(x=>x.id===id?({...x,bottles:Number(bottles)}):x));
+  };
+
+  // Remove analgesics by allergy
+  const visibleAnalgesics = useMemo(()=>{
+    return analgesics.filter(it=>{
+      if (it.key==="paracetamol" && allergyPara) return false;
+      if (it.key==="dipirona" && allergyDip) return false;
+      if (it.key==="ibuprofeno" && allergyIbu) return false;
+      return true;
+    });
+  },[analgesics, allergyPara, allergyDip, allergyIbu]);
+
+  // Antibiotic logic:
+  // - If hardNoPO => ceftriaxona (unless ceph allergy)
+  // - Else if allergyAmox OR allergyClav => show manual chooser (single selection, immediate include/remove)
+  // - Else auto: recentBLactam OR purulentConj OR clinicalFailure => amoxclav; else amox
+  const needAltChooser = useMemo(()=> (!hardNoPO && (allergyAmox || allergyClav)), [hardNoPO, allergyAmox, allergyClav]);
+
+  // Manual selection state (single choice)
+  // values: "amox" | "amoxclav" | "cefurox" | "ceftriax" | "clari" | ""
+  const [altChoice, setAltChoice] = useState("");
+
+  // If user unchecks allergy conditions, clear chooser selection (to avoid stale)
+  useEffect(()=>{
+    if (!needAltChooser){
+      setAltChoice("");
+    }
+  },[needAltChooser]);
+
+  // Build auto antibiotic id when no chooser and not ceftriax trigger
+  const autoAtb = useMemo(()=>{
+    if (hardNoPO) return "ceftriax";
+    if (needAltChooser) return ""; // manual
+    if (recentBLactam || purulentConj || clinicalFailure) return "amoxclav";
+    return "amox";
+  },[hardNoPO, needAltChooser, recentBLactam, purulentConj, clinicalFailure]);
+
+  // Helper to determine if ceftriax is final selected
+  const finalIsCeftriax = useMemo(()=>{
+    if (hardNoPO) return !allergyCeph; // if ceph allergy, ceftriax not available
+    if (needAltChooser) return altChoice === "ceftriax";
+    return autoAtb === "ceftriax";
+  },[hardNoPO, allergyCeph, needAltChooser, altChoice, autoAtb]);
+
+  // Build antibiotic items list (for cards + export)
+  const antibioticItems = useMemo(()=>{
+    const list = [];
+
+    // Hard VO -> ceftriax
+    if (hardNoPO){
+      if (!allergyCeph){
+        list.push({
+          id:"atb_ceftria",
+          kind:"ceftriax",
+          name:"Ceftriaxona (IM/IV)",
+          route:"IM/IV",
+          regimen:"1x/dia por 3 dias",
+          detail:"MVP: seleciona ceftriaxona 50 mg/kg/dia por 3 dias (mg/dose)."
+        });
+      } else {
+        list.push({
+          id:"atb_note_ceftria_block",
+          kind:"note",
+          name:"Atenção",
+          route:"",
+          text:"Dificuldade importante de VO/adesão selecionada, mas alergia a cefalosporinas impede ceftriaxona. Reavaliar conduta."
+        });
+      }
+      return list;
+    }
+
+    // Manual chooser
+    if (needAltChooser){
+      if (altChoice === "cefurox"){
+        if (!allergyCeph){
+          list.push({
+            id:"atb_cefu",
+            kind:"fixed_mlkg",
+            name:"Cefuroxima 250 mg/5 mL",
+            route:"VO",
+            mlPerKgDose:0.3,
+            freqText:"12/12h por 7 a 10 dias.",
+            note:"Dose equivalente a 30 mg/kg/dia (0,3 mL/kg/dose 12/12h)."
+          });
+        }
+      } else if (altChoice === "ceftriax"){
+        if (!allergyCeph){
+          list.push({
+            id:"atb_ceftria",
+            kind:"ceftriax",
+            name:"Ceftriaxona (IM/IV)",
+            route:"IM/IV",
+            regimen:"1x/dia por 3 dias",
+            detail:"MVP: seleciona ceftriaxona 50 mg/kg/dia por 3 dias (mg/dose)."
+          });
+        }
+      } else if (altChoice === "clari"){
+        if (!allergyMacro){
+          list.push({
+            id:"atb_clari",
+            kind:"fixed_mlkg",
+            name:"Claritromicina 125 mg/5 mL",
+            route:"VO",
+            mlPerKgDose:0.15,
+            freqText:"12/12h por 7 a 10 dias."
+          });
+        }
+      } else if (altChoice === "amox"){
+        // allowed when clav allergy only (or neither allergy, but here only in chooser)
+        // If allergyAmox is true, do not allow (safety)
+        if (!allergyAmox){
+          list.push({
+            id:"atb_amox",
+            kind:"amox_bi",
+            name:"Amoxicilina 250 mg/5 mL",
+            route:"VO",
+            dailyMgKg:90,
+            concentrationMgPerMl:50,
+            maxMgDay:1500,
+            freqText:`12/12h por ${antibioticDays} dias.`
+          });
+        }
+      } else if (altChoice === "amoxclav"){
+        // only if no clav allergy (but chooser appears for clav allergy; still keep safe)
+        if (!allergyClav && !allergyAmox){
+          list.push({
+            id:"atb_amoxclav",
+            kind:"amox_bi",
+            name:"Amoxicilina + Clavulanato 400 mg/5 mL (componente amoxi)",
+            route:"VO",
+            dailyMgKg:90,
+            concentrationMgPerMl:80,
+            maxMgDay:1500,
+            freqText:`12/12h por ${antibioticDays} dias.`,
+            note:"Dose calculada pelo componente amoxicilina (90 mg/kg/dia)."
+          });
+        }
+      }
+
+      return list;
+    }
+
+    // Auto
+    if (autoAtb === "amoxclav"){
+      list.push({
+        id:"atb_amoxclav",
+        kind:"amox_bi",
+        name:"Amoxicilina + Clavulanato 400 mg/5 mL (componente amoxi)",
+        route:"VO",
+        dailyMgKg:90,
+        concentrationMgPerMl:80,
+        maxMgDay:1500,
+        freqText:`12/12h por ${antibioticDays} dias.`,
+        note:"Dose calculada pelo componente amoxicilina (90 mg/kg/dia)."
+      });
+      return list;
+    }
+
+    // default amox
+    list.push({
+      id:"atb_amox",
+      kind:"amox_bi",
+      name:"Amoxicilina 250 mg/5 mL",
+      route:"VO",
+      dailyMgKg:90,
+      concentrationMgPerMl:50,
+      maxMgDay:1500,
+      freqText:`12/12h por ${antibioticDays} dias.`
+    });
+    return list;
+  },[hardNoPO, allergyCeph, needAltChooser, altChoice, allergyMacro, allergyAmox, allergyClav, autoAtb, antibioticDays]);
+
+  // Total antibiotic mL (only oral liquid antibiotics)
+  const totalAntibioticMl = useMemo(()=>{
+    if (!hasInputs) return 0;
+
+    let total = 0;
+    for (const it of antibioticItems){
+      if (it.kind === "amox_bi"){
+        const r = mgkgDayToMlDoseBID(it.dailyMgKg, it.concentrationMgPerMl, it.maxMgDay ?? null, ML_STEP_AMOX);
+        total += (r.mlDose * 2 * antibioticDays);
+      }
+      if (it.kind === "fixed_mlkg"){
+        const r = fixedMlKgDose(it.mlPerKgDose, ML_STEP_DEFAULT);
+        total += (r.mlDose * 2 * antibioticDays);
+      }
+    }
+    return total;
+  },[antibioticItems, hasInputs, W, antibioticDays]);
+
+  const recommendationsText =
+    "Recomendações: Retornar à unidade caso não houver melhora ou houver piora da dor/febre após 48 a 72 horas do início do tratamento / " +
+    "Saída de secreção (otorreia) persistente após o tratamento / " +
+    "Surgir inchaço ou vermelhidão atrás da orelha (sinal de mastoidite) / " +
+    "Baixa tolerância da medicação por via oral / " +
+    "Vômitos persistentes, Sonolência excessiva, Convulsões.";
+
+  const exportHeader = useMemo(()=>{
+    return finalIsCeftriax ? "USO IM/EV" : "USO ORAL";
+  },[finalIsCeftriax]);
+
+  // Build export text (no "dose limitada" text)
+  const exportText = useMemo(()=>{
+    const lines = [];
+    lines.push(exportHeader);
+    lines.push("");
+
+    let idx = 1;
+
+    for (const it of visibleAnalgesics){
+      const r = mgkgDoseToDrops(it.doseMgKg, it.concentrationMgPerMl);
+      lines.push(`${idx}. ${it.name}`);
+      lines.push(`   Dar ${r.label} ${it.freqText}`);
+      if (it.note) lines.push(`   Obs: ${it.note}`);
+      lines.push("");
+      idx++;
+    }
+
+    for (const it of antibioticItems){
+      if (it.kind === "amox_bi"){
+        const r = mgkgDayToMlDoseBID(it.dailyMgKg, it.concentrationMgPerMl, it.maxMgDay ?? null, ML_STEP_AMOX);
+        // format 1 decimal
+        const mlDoseStr = formatMl(r.mlDose, 1);
+        lines.push(`${idx}. ${it.name}`);
+        lines.push(`   Dar ${mlDoseStr} mL/dose de 12 em 12 horas por ${antibioticDays} dias.`);
+        if (it.note) lines.push(`   Obs: ${it.note}`);
+        lines.push("");
+        idx++;
+        continue;
+      }
+
+      if (it.kind === "fixed_mlkg"){
+        const r = fixedMlKgDose(it.mlPerKgDose, ML_STEP_DEFAULT);
+        const mlDoseStr = formatMl(r.mlDose, 1);
+        lines.push(`${idx}. ${it.name}`);
+        lines.push(`   Dar ${mlDoseStr} mL/dose a cada 12 horas por 7 a 10 dias.`);
+        if (it.note) lines.push(`   Obs: ${it.note}`);
+        lines.push("");
+        idx++;
+        continue;
+      }
+
+      if (it.kind === "ceftriax"){
+        lines.push(`${idx}. ${it.name}`);
+        lines.push(`   Dar ${hasInputs ? ceftriaxoneMgDose() : "--"} 1x/dia por 3 dias.`);
+        lines.push(`   Obs: ${it.detail}`);
+        lines.push("");
+        idx++;
+        continue;
+      }
+
+      if (it.kind === "note"){
+        lines.push(`${idx}. ${it.name}`);
+        lines.push(`   ${it.text}`);
+        lines.push("");
+        idx++;
+        continue;
+      }
+    }
+
+    if (hasInputs){
+      lines.push(`Volume total estimado de antibiótico (mL): ${formatMl(roundToStep(totalAntibioticMl, 0.1), 1)} mL`);
+      lines.push("");
+    }
+
+    lines.push(recommendationsText);
+    return lines.join("\n");
+  },[exportHeader, visibleAnalgesics, antibioticItems, hasInputs, antibioticDays, totalAntibioticMl]);
+
+  // generate behavior
+  const previewRef = useRef(null);
+  const generate = ()=>{
+    if (previewRef.current){
+      previewRef.current.scrollIntoView({behavior:"smooth", block:"start"});
+      setTimeout(()=>{
+        try{
+          previewRef.current.focus();
+          previewRef.current.select();
+        }catch{}
+      }, 250);
+    }
+  };
+  const pdf = ()=>{
+    // Use browser print => save as PDF
+    window.print();
+  };
+
+  // Alt chooser options UI rules:
+  // - If allergyAmox true => show cefurox/ceftriax/clari (if allowed by other allergies)
+  // - If allergyClav true AND allergyAmox false => show amox + cefurox + ceftriax + clari
+  const showAltOptions = needAltChooser;
+
+  const altOptions = useMemo(()=>{
+    if (!showAltOptions) return [];
+
+    const opts = [];
+    const canCef = !allergyCeph;
+    const canClari = !allergyMacro;
+
+    // clav-only => include amoxicillin pure option
+    if (allergyClav && !allergyAmox){
+      opts.push({
+        id:"amox",
+        title:"Amoxicilina 250 mg/5 mL",
+        desc:"Opção sem clavulanato (liberada quando alergia é apenas ao clavulanato)."
+      });
+    }
+
+    if (canCef){
+      opts.push({
+        id:"cefurox",
+        title:"Cefuroxima 250 mg/5 mL",
+        desc:"0,3 mL/kg/dose 12/12h (30 mg/kg/dia), por 7 a 10 dias."
+      });
+      opts.push({
+        id:"ceftriax",
+        title:"Ceftriaxona (IM/IV)",
+        desc:"50 mg/kg/dia por 3 dias (mg/dose)."
+      });
+    }
+
+    if (canClari){
+      opts.push({
+        id:"clari",
+        title:"Claritromicina 125 mg/5 mL",
+        desc:"0,15 mL/kg/dose 12/12h, por 7 a 10 dias."
+      });
+    }
+
+    return opts;
+  },[showAltOptions, allergyClav, allergyAmox, allergyCeph, allergyMacro]);
+
+  const altMissingWarning = useMemo(()=>{
+    if (!showAltOptions) return false;
+    // If user must choose but hasn't
+    return altChoice === "";
+  },[showAltOptions, altChoice]);
+
+  const allItems = useMemo(()=>{
+    const list = [...visibleAnalgesics, ...antibioticItems.map(x=>({...x,bottles:1}))];
+    const rank = (it)=>{
+      if (it.key==="paracetamol") return 10;
+      if (it.key==="dipirona") return 20;
+      if (it.key==="ibuprofeno") return 30;
+      if (it.kind==="note") return 90;
+      return 60;
+    };
+    list.sort((a,b)=>rank(a)-rank(b));
+    return list;
+  },[visibleAnalgesics, antibioticItems]);
+
+  const disabledActions = !hasInputs;
+
+  return (
+    <div className="wrap">
+      <div className="topbar">
+        <div className="topbarHead">
+          <div className="brandBlock">
+            <img className="brandLogo" src="logo.png" alt="Ped Prescreve" onError={(e)=>{e.currentTarget.style.display="none";}} />
+            <div className="brandTexts">
+              <p className="brandName">PED PRESCREVE</p>
+              <p className={"brandScreenTitle brand-title"}>Prescrição de Otite Média Aguda</p>
+              <p className="brandSubtitle">Layout e cores do modelo • navegação por Home</p>
+            </div>
+          </div>
+
+          <div style={{display:"flex", gap:10, alignItems:"center"}}>
+            <div className="backBtn" onClick={onBack} role="button" tabIndex={0}>
+              ← Voltar
+            </div>
+            <div className="iconPill">
+              <span className="dot"></span>
+              <span>OMA</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid">
+        {/* LEFT */}
+        <div className="card">
+          <div className="cardHead">
+            <h2>Dados do paciente</h2>
+            <span className="pill">Obrigatórios</span>
+          </div>
+
+          <div className="cardBody">
+            <div className="row">
+              <div>
+                <label>Peso (kg)</label>
+                <input
+                  className="field"
+                  inputMode="decimal"
+                  placeholder="Ex.: 12,5"
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value.replace(",", "."))}
+                />
+                <div className="mini" style={{marginTop:6}}>
+                  Padronização: 20 gotas/mL. Amoxi/Amoxi-clav: 0,5 mL (1 casa decimal).
+                </div>
+              </div>
+
+              <div>
+                <label>Idade</label>
+                <div
+                  className="field"
+                  role="button"
+                  tabIndex={0}
+                  onClick={()=>setAgeSheetOpen(true)}
+                  style={{display:"flex", alignItems:"center", justifyContent:"space-between", cursor:"pointer"}}
+                >
+                  <span style={{color: (ageValueInput? "var(--pp-text)" : "rgba(90,109,102,.75)")}}>
+                    {ageValueInput ? `${ageValueInput} ${ageUnit==="years" ? "anos" : "meses"}` : "Toque para definir"}
+                  </span>
+                  <span className="pill">Editar</span>
+                </div>
+                <div className="mini" style={{marginTop:6}}>
+                  Padrão: <strong>Anos</strong>. (Toque para abrir o seletor iOS-like.)
+                </div>
+              </div>
+            </div>
+
+            <div style={{height:10}} />
+
+            <button className="btn" onClick={resetStandard} style={{width:"100%"}}>
+              Restaurar padrão
+            </button>
+
+            <div className="note">
+              <strong>Disparo:</strong> as doses aparecem após preencher <strong>peso</strong> e <strong>idade</strong>.
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT */}
+        <div className="card">
+          <div className="cardHead">
+            <h2>Prescrição (Padrão)</h2>
+            <span className="pill">OMA</span>
+          </div>
+
+          <div className="cardBody">
+            <label>Critérios clínicos</label>
+            <div className="checkGrid">
+              <div className="checkItem">
+                <input type="checkbox" checked={severe} onChange={(e)=>setSevere(e.target.checked)} />
+                <div className="checkMeta">
+                  <div className="h">Doença grave</div>
+                  <div className="s">Ex.: febre alta persistente, otalgia intensa, toxemia/prostração.</div>
+                </div>
+              </div>
+
+              <div className="checkItem">
+                <input type="checkbox" checked={otorrhea} onChange={(e)=>setOtorrhea(e.target.checked)} />
+                <div className="checkMeta">
+                  <div className="h">Otorreia</div>
+                  <div className="s">Sugere perfuração/otite supurativa → tende a favorecer tratamento e 10 dias.</div>
+                </div>
+              </div>
+
+              <div className="checkItem">
+                <input type="checkbox" checked={recentBLactam} onChange={(e)=>setRecentBLactam(e.target.checked)} />
+                <div className="checkMeta">
+                  <div className="h">Amoxicilina/β-lactâmico nos últimos 30 dias</div>
+                  <div className="s">Direciona para amoxi-clav em muitos protocolos.</div>
+                </div>
+              </div>
+
+              <div className="checkItem">
+                <input type="checkbox" checked={purulentConj} onChange={(e)=>setPurulentConj(e.target.checked)} />
+                <div className="checkMeta">
+                  <div className="h">Conjuntivite purulenta associada</div>
+                  <div className="s">Sugere H. influenzae → considerar amoxi-clav.</div>
+                </div>
+              </div>
+
+              <div className="checkItem">
+                <input type="checkbox" checked={clinicalFailure} onChange={(e)=>setClinicalFailure(e.target.checked)} />
+                <div className="checkMeta">
+                  <div className="h">Falha clínica (48–72h) / refratariedade</div>
+                  <div className="s">Direciona para escalonamento.</div>
+                </div>
+              </div>
+
+              <div className="checkItem">
+                <input type="checkbox" checked={hardNoPO} onChange={(e)=>setHardNoPO(e.target.checked)} />
+                <div className="checkMeta">
+                  <div className="h">Dificuldade importante de VO/adesão</div>
+                  <div className="s">MVP: seleciona ceftriaxona 50 mg/kg/dia por 3 dias (mg/dose).</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="hr"></div>
+
+            <div className="accordion">
+              <div className="accHead" onClick={() => setAllergyOpen(v => !v)} role="button" tabIndex={0}>
+                <div>
+                  <div className="t">Alergia</div>
+                  <div className="d">Marque para remover analgésicos / habilitar escolha manual de antibiótico</div>
+                </div>
+                <div className="pill">{allergyOpen ? "Fechar" : "Abrir"}</div>
+              </div>
+
+              {allergyOpen ? (
+                <div className="accBody">
+                  <div className="checkItem">
+                    <input type="checkbox" checked={allergies[ALLERGY_KEYS.AMOX]} onChange={()=>toggleAllergy(ALLERGY_KEYS.AMOX)} />
+                    <div className="checkMeta">
+                      <div className="h">Beta-lactâmico — Amoxicilina</div>
+                      <div className="s">Abre opções de antibiótico alternativo (seleção única).</div>
+                    </div>
+                  </div>
+
+                  <div className="checkItem">
+                    <input type="checkbox" checked={allergies[ALLERGY_KEYS.CLAV]} onChange={()=>toggleAllergy(ALLERGY_KEYS.CLAV)} />
+                    <div className="checkMeta">
+                      <div className="h">Clavulanato</div>
+                      <div className="s">Libera Amoxicilina pura como opção (e alternativas).</div>
+                    </div>
+                  </div>
+
+                  <div className="checkItem">
+                    <input type="checkbox" checked={allergies[ALLERGY_KEYS.CEPH]} onChange={()=>toggleAllergy(ALLERGY_KEYS.CEPH)} />
+                    <div className="checkMeta">
+                      <div className="h">Cefalosporinas</div>
+                      <div className="s">Remove opções cefuroxima/ceftriaxona.</div>
+                    </div>
+                  </div>
+
+                  <div className="checkItem">
+                    <input type="checkbox" checked={allergies[ALLERGY_KEYS.NSAID]} onChange={()=>toggleAllergy(ALLERGY_KEYS.NSAID)} />
+                    <div className="checkMeta">
+                      <div className="h">AINE — Ibuprofeno</div>
+                      <div className="s">Remove ibuprofeno.</div>
+                    </div>
+                  </div>
+
+                  <div className="checkItem">
+                    <input type="checkbox" checked={allergies[ALLERGY_KEYS.MACRO]} onChange={()=>toggleAllergy(ALLERGY_KEYS.MACRO)} />
+                    <div className="checkMeta">
+                      <div className="h">Macrolídeos</div>
+                      <div className="s">Remove claritromicina (caso selecionada).</div>
+                    </div>
+                  </div>
+
+                  <div className="checkItem">
+                    <input type="checkbox" checked={allergies[ALLERGY_KEYS.DIP]} onChange={()=>toggleAllergy(ALLERGY_KEYS.DIP)} />
+                    <div className="checkMeta">
+                      <div className="h">Dipirona</div>
+                      <div className="s">Remove dipirona.</div>
+                    </div>
+                  </div>
+
+                  <div className="checkItem">
+                    <input type="checkbox" checked={allergies[ALLERGY_KEYS.PARA]} onChange={()=>toggleAllergy(ALLERGY_KEYS.PARA)} />
+                    <div className="checkMeta">
+                      <div className="h">Paracetamol</div>
+                      <div className="s">Remove paracetamol.</div>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
+            {showAltOptions ? (
+              <>
+                <div className="hr"></div>
+
+                <div className="choiceBox">
+                  <div className="choiceHeader">
+                    <div>
+                      <div className="t">Escolha de antibiótico (por alergia)</div>
+                      <div className="d">Seleção única • só entra na prescrição final o selecionado</div>
+                    </div>
+                    {altMissingWarning ? <div className="pill" style={{borderColor:"var(--danger-bd)", background:"var(--danger-bg)"}}>Selecione 1</div> : <div className="pill">OK</div>}
+                  </div>
+
+                  {altOptions.map((o, i)=>(
+                    <React.Fragment key={o.id}>
+                      <div className="radioItem" onClick={()=> setAltChoice(prev => (prev===o.id ? "" : o.id))}>
+                        <input
+                          type="checkbox"
+                          checked={altChoice===o.id}
+                          readOnly
+                        />
+                        <div className="radioMeta">
+                          <div className="h">{o.title}</div>
+                          <div className="s">{o.desc}</div>
+                        </div>
+                      </div>
+
+                      {i < altOptions.length-1 ? (
+                        <div className="orRow"><div className="orLine" /><span>OU</span><div className="orLine" /></div>
+                      ) : null}
+                    </React.Fragment>
+                  ))}
+
+                  <div className="mini">
+                    Dica: clique novamente na opção marcada para <strong>remover</strong> (ela some imediatamente da prescrição).
+                  </div>
+                </div>
+              </>
+            ) : null}
+          </div>
+
+          {/* Rx items */}
+          {allItems.map((it) => {
+            let doseLabel = "--";
+            let badges = [];
+
+            if (it.kind === "analgesic") {
+              const r = mgkgDoseToDrops(it.doseMgKg, it.concentrationMgPerMl);
+              doseLabel = r.label;
+              badges = [
+                <div key="calc" className="badge gold"><span>Calculado:</span> <strong>{doseLabel}</strong></div>,
+                <div key="conc" className="badge"><span>Concentração:</span> <strong>{it.concentrationMgPerMl} mg/mL</strong></div>,
+              ];
+            }
+
+            if (it.kind === "amox_bi") {
+              const r = mgkgDayToMlDoseBID(it.dailyMgKg, it.concentrationMgPerMl, it.maxMgDay ?? null, ML_STEP_AMOX);
+              doseLabel = `${formatMl(r.mlDose, 1)} mL/dose`;
+              badges = [
+                <div key="calc" className="badge gold"><span>Calculado:</span> <strong>{doseLabel}</strong></div>,
+                <div key="dur" className="badge"><span>Duração:</span> <strong>{antibioticDays} dias</strong></div>,
+                <div key="round" className="badge ok"><span>Arred.:</span> <strong>0,5 mL</strong></div>,
+              ];
+            }
+
+            if (it.kind === "fixed_mlkg") {
+              const r = fixedMlKgDose(it.mlPerKgDose, ML_STEP_DEFAULT);
+              doseLabel = `${formatMl(r.mlDose, 1)} mL/dose`;
+              badges = [
+                <div key="calc" className="badge gold"><span>Calculado:</span> <strong>{doseLabel}</strong></div>,
+                <div key="dur" className="badge"><span>Duração:</span> <strong>7 a 10 dias</strong></div>,
+              ];
+            }
+
+            if (it.kind === "ceftriax") {
+              doseLabel = hasInputs ? ceftriaxoneMgDose() : "--";
+              badges = [
+                <div key="calc" className="badge gold"><span>Calculado:</span> <strong>{doseLabel}</strong></div>,
+                <div key="dur" className="badge"><span>Esquema:</span> <strong>3 dias</strong></div>,
+              ];
+            }
+
+            if (it.kind === "note") {
+              badges = [<div key="warn" className="badge warn"><strong>{it.text}</strong></div>];
+            }
+
+            return (
+              <div className="rxItem" key={it.id}>
+                <div style={{display:"flex", gap:10, alignItems:"flex-start", justifyContent:"space-between"}}>
+                  <div>
+                    <p className="rxName">{it.name}</p>
+                    {it.route ? <p className="rxSub"><strong>Via:</strong> {it.route}</p> : null}
+                    <div className="badgeRow">{badges}</div>
+
+                    {it.kind === "analgesic" ? (
+                      <div className="rxSub" style={{marginTop:8}}>
+                        Dar <strong>{doseLabel}</strong> {it.freqText}
+                        {it.note ? <div className="mini" style={{marginTop:6}}>Obs: {it.note}</div> : null}
+                      </div>
+                    ) : null}
+
+                    {it.kind === "amox_bi" ? (
+                      <div className="rxSub" style={{marginTop:8}}>
+                        Dar <strong>{doseLabel}</strong> de 12 em 12 horas por <strong>{antibioticDays} dias</strong>.
+                        {it.note ? <div className="mini" style={{marginTop:6}}>Obs: {it.note}</div> : null}
+                      </div>
+                    ) : null}
+
+                    {it.kind === "fixed_mlkg" ? (
+                      <div className="rxSub" style={{marginTop:8}}>
+                        Dar <strong>{doseLabel}</strong> a cada 12 horas por <strong>7 a 10 dias</strong>.
+                        {it.note ? <div className="mini" style={{marginTop:6}}>Obs: {it.note}</div> : null}
+                      </div>
+                    ) : null}
+
+                    {it.kind === "ceftriax" ? (
+                      <div className="rxSub" style={{marginTop:8}}>
+                        Dar <strong>{doseLabel}</strong> 1x/dia por <strong>3 dias</strong>.
+                        <div className="mini" style={{marginTop:6}}>Obs: {it.detail}</div>
+                      </div>
+                    ) : null}
+                  </div>
+
+                  {it.kind === "analgesic" ? (
+                    <div
+                      className="trash"
+                      title="Excluir item"
+                      onClick={() => removeAnalgesic(it.id)}
+                      role="button"
+                      tabIndex={0}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M9 3h6m-8 4h10m-9 0 1 14h6l1-14M10 11v7m4-7v7"
+                          stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                  ) : null}
+                </div>
+
+                {it.kind === "analgesic" ? (
+                  <div className="qty">
+                    <span>Qtd. frascos:</span>
+                    <select className="field" style={{maxWidth:180}} value={it.bottles ?? 1} onChange={(e)=>setAnalgesicBottles(it.id, e.target.value)}>
+                      {[1,2,3,4,5,6].map(n => <option key={n} value={n}>{n}</option>)}
+                    </select>
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
+
+          <div className="cardBody">
+            <div className="summary">
+              <p className="k">Volume total estimado de antibiótico (mL)</p>
+              <p className="v">{hasInputs ? `${formatMl(roundToStep(totalAntibioticMl, 0.1), 1)} mL` : "--"}</p>
+              <div className="hr"></div>
+              <div className="mini">{recommendationsText}</div>
+            </div>
+
+            <div className="hr"></div>
+
+            <label>Pré-visualização</label>
+            <textarea ref={previewRef} className={"mono"} value={exportText} readOnly />
+            {altMissingWarning ? (
+              <div className="note" style={{borderColor:"var(--danger-bd)", background:"var(--danger-bg)"}}>
+                <strong>Atenção:</strong> alergia marcada → selecione <strong>1 antibiótico</strong> na caixa “Escolha de antibiótico (por alergia)” para ele entrar na prescrição final.
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </div>
+
+      <AgeSheet
+        open={ageSheetOpen}
+        onClose={()=>setAgeSheetOpen(false)}
+        value={ageValueInput}
+        unit={ageUnit}
+        onChange={({value, unit})=>{
+          setAgeValueInput(value);
+          setAgeUnit(unit);
+        }}
+      />
+
+      <BottomBar onGenerate={generate} onPDF={pdf} disabled={disabledActions} />
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
